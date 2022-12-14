@@ -51,7 +51,7 @@ public:
 
     virtual void update_positions(VecSlice&) = 0;
 
-    virtual void update_velocities(const VecSlice&) = 0;
+    virtual void update_fields(const VecSlice&, const RealSlice&) = 0;
 
     virtual void compute_forces() = 0;
 
@@ -116,6 +116,9 @@ public:
     //! Return the core info object for this actuator instance
     const ActInfo& info() const override { return m_data.info(); }
 
+    //! Return the meta info object for this actuator instance
+    const auto& meta() const { return m_data.meta(); }
+
     void read_inputs(const utils::ActParser& pp) override
     {
         ops::ReadInputsOp<ActTrait, SrcTrait>()(m_data, pp);
@@ -138,9 +141,11 @@ public:
         std::copy(vpos.begin(), vpos.end(), pos.begin());
     }
 
-    void update_velocities(const VecSlice& vel) override
+    void update_fields(const VecSlice& vel, const RealSlice& density) override
     {
         std::copy(vel.begin(), vel.end(), m_data.grid().vel.begin());
+        std::copy(
+            density.begin(), density.end(), m_data.grid().density.begin());
         ops::UpdateVelOp<ActTrait, SrcTrait>()(m_data);
     }
 
